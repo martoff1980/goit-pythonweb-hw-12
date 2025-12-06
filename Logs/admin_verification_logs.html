@@ -1,0 +1,19 @@
+<!-- @format -->
+
+{% extends "base.html" %} {% block content %}
+<h2>Verification Logs</h2>
+<table border="1" cellpadding="6">
+	<tr>
+		<th>ID</th>
+		<th>User ID</th>
+		<th>Confirmed at</th>
+	</tr>
+	{% for l in logs %}
+	<tr>
+		<td>{{ l.id }}</td>
+		<td>{{ l.user_id }}</td>
+		<td>{{ l.confirmed_at }}</td>
+	</tr>
+	{% endfor %}
+</table>
+{% endblock %}

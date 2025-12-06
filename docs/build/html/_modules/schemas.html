@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html lang="uk-UA" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>schemas &#8212; API Contact Manager 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=78e11f7b"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/translations.js?v=0958edf7"></script>
+    <link rel="index" title="Індекс" href="../genindex.html" />
+    <link rel="search" title="Пошук" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for schemas</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">EmailStr</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">,</span> <span class="n">field_validator</span>
+
+
+<div class="viewcode-block" id="ContactBase">
+<a class="viewcode-back" href="../schemas.html#schemas.ContactBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContactBase</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Схема базової інформації про контакт.</span>
+
+<span class="sd">    :param first_name: Ім&#39;я контакту.</span>
+<span class="sd">    :param last_name: Прізвище контакту.</span>
+<span class="sd">    :param email: Email контакту.</span>
+<span class="sd">    :param phone: Номер телефону.</span>
+<span class="sd">    :param date_of_birth: Дата народження контакту.</span>
+<span class="sd">    :param information: Додаткова інформація про контакт.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">first_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">email</span><span class="p">:</span> <span class="n">EmailStr</span>
+    <span class="n">phone</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">date_of_birth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">date</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># date</span>
+    <span class="n">information</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="c1"># owner_id: int  # ID користувача-власника контакту</span>
+
+
+<div class="viewcode-block" id="ContactCreate">
+<a class="viewcode-back" href="../schemas.html#schemas.ContactCreate">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContactCreate</span><span class="p">(</span><span class="n">ContactBase</span><span class="p">):</span>
+
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="ContactUpdate">
+<a class="viewcode-back" href="../schemas.html#schemas.ContactUpdate">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContactUpdate</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Схема для оновлення інформації про контакт.</span>
+
+<span class="sd">    :param first_name: Ім&#39;я контакту.</span>
+<span class="sd">    :param last_name: Прізвище контакту.</span>
+<span class="sd">    :param email: Email контакту.</span>
+<span class="sd">    :param phone: Номер телефону.</span>
+<span class="sd">    :param date_of_birth: Дата народження контакту.</span>
+<span class="sd">    :param information: Додаткова інформація про контакт.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">first_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">last_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">email</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EmailStr</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">phone</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">date_of_birth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">date</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">information</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="ContactOut">
+<a class="viewcode-back" href="../schemas.html#schemas.ContactOut">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContactOut</span><span class="p">(</span><span class="n">ContactBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Схема виведення інформації про контакт.</span>
+
+<span class="sd">    :param id: Унікальний ідентифікатор контакту.</span>
+<span class="sd">    :param owner_id: Ідентифікатор власника контакту (користувача).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">owner_id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">from_attributes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ContactInDB">
+<a class="viewcode-back" href="../schemas.html#schemas.ContactInDB">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContactInDB</span><span class="p">(</span><span class="n">ContactBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Схема для внутрішнього використання, що включає ID контакту.</span>
+
+<span class="sd">    :param id: Унікальний ідентифікатор контакту.</span>
+<span class="sd">    :param model_config: Конфігурація моделі для Pydantic.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">from_attributes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="UserBase">
+<a class="viewcode-back" href="../schemas.html#schemas.UserBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UserBase</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Схема базової інформації про користувача.</span>
+
+<span class="sd">    :param email: Email користувача.</span>
+<span class="sd">    :param full_name: Повне ім&#39;я користувача.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">email</span><span class="p">:</span> <span class="n">EmailStr</span>
+    <span class="n">full_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="UserCreate">
+<a class="viewcode-back" href="../schemas.html#schemas.UserCreate">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UserCreate</span><span class="p">(</span><span class="n">UserBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Схема для створення нового користувача.</span>
+
+<span class="sd">    :param email: Email користувача.</span>
+<span class="sd">    :param password: Пароль користувача.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">email</span><span class="p">:</span> <span class="n">EmailStr</span>
+    <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="UserOut">
+<a class="viewcode-back" href="../schemas.html#schemas.UserOut">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UserOut</span><span class="p">(</span><span class="n">UserBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Схема виведення інформації про користувача.</span>
+
+<span class="sd">    :param id: Унікальний ідентифікатор користувача.</span>
+<span class="sd">    :param is_active: Статус активності користувача.</span>
+<span class="sd">    :param is_verified: Статус верифікації користувача.</span>
+<span class="sd">    :param avatar_url: URL аватарки користувача.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">is_active</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">is_verified</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">avatar_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">from_attributes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Token schemas</span>
+<div class="viewcode-block" id="Token">
+<a class="viewcode-back" href="../schemas.html#schemas.Token">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Token</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Схема токена доступу.</span>
+
+<span class="sd">    :param access_token: Токен доступу.</span>
+<span class="sd">    :param token_type: Тип токена.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">access_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">token_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bearer&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ResetPasswordRequest">
+<a class="viewcode-back" href="../schemas.html#schemas.ResetPasswordRequest">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ResetPasswordRequest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">new_password</span><span class="p">:</span> <span class="nb">str</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">API Contact Manager</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Вперед" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Навігація</h3>
+<p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../endpoints.html">Endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../middleware.html">Middleware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../schemas.html">Schemas</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../crud.html">CRUD Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cache.html">Cache</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, D. Breus.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

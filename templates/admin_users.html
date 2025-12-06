@@ -1,0 +1,43 @@
+<!-- @format -->
+
+{% extends "base.html" %} {% block content %}
+<h2>Admin — Users</h2>
+
+<form method="get" action="/admin/users">
+	<input type="text" name="q" placeholder="Search email or name" value="{{ query }}" style="width: 60%; padding: 8px" />
+	<button type="submit">🔍 Search</button>
+	{% if query %}
+	<a href="/admin/users" style="margin-left: 10px">Скинути</a>
+	{% endif %}
+</form>
+
+<table border="1" cellpadding="6" style="margin-top: 10px">
+	<tr>
+		<th>ID</th>
+		<th>Email</th>
+		<th>Name</th>
+		<th>Role</th>
+		<th>Verified</th>
+		<th>Active</th>
+		<th>Created</th>
+		<th>Actions</th>
+	</tr>
+	{% for u in users %}
+	<tr>
+		<td>{{ u.id }}</td>
+		<td>{{ u.email }}</td>
+		<td>{{ u.full_name or '' }}</td>
+		<td>{{ u.role.value if u.role else u.role }}</td>
+		<td>{{ 'Yes' if u.is_verified else 'No' }}</td>
+		<td>{{ 'Yes' if u.is_active else 'No' }}</td>
+		<td>{{ u.created_at }}</td>
+		<td>
+			<a href="/admin/users/{{ u.id }}/edit">Edit</a>
+			<form action="/admin/users/{{ u.id }}/delete" method="post" style="display: inline" onsubmit="return confirm('Delete user?')">
+				<button type="submit">Delete</button>
+			</form>
+		</td>
+	</tr>
+	{% endfor %}
+</table>
+{% endblock %}

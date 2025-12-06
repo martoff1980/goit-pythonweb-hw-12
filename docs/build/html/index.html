@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html lang="uk-UA" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API Contact Manager documentation &#8212; API Contact Manager 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=78e11f7b"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/translations.js?v=0958edf7"></script>
+    <link rel="index" title="Індекс" href="genindex.html" />
+    <link rel="search" title="Пошук" href="search.html" />
+    <link rel="next" title="Endpoints" href="endpoints.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="api-contact-manager-documentation">
+<h1>API Contact Manager documentation<a class="headerlink" href="#api-contact-manager-documentation" title="Link to this heading">¶</a></h1>
+<p>Add your content using <code class="docutils literal notranslate"><span class="pre">reStructuredText</span></code> syntax. See the
+<a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html">reStructuredText</a>
+documentation for details.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">Endpoints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#module-main">Auth Router</a></li>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#module-routers.admin">Admin Router</a></li>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#module-routers.contacts">Contacts Router</a></li>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#module-routers.users">Users Router</a></li>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#module-services.email">Email Router</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models.html#models.Contact"><code class="docutils literal notranslate"><span class="pre">Contact</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#models.Role"><code class="docutils literal notranslate"><span class="pre">Role</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#models.User"><code class="docutils literal notranslate"><span class="pre">User</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="schemas.html">Schemas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.ContactBase"><code class="docutils literal notranslate"><span class="pre">ContactBase</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.ContactCreate"><code class="docutils literal notranslate"><span class="pre">ContactCreate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.ContactInDB"><code class="docutils literal notranslate"><span class="pre">ContactInDB</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.ContactOut"><code class="docutils literal notranslate"><span class="pre">ContactOut</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.ContactUpdate"><code class="docutils literal notranslate"><span class="pre">ContactUpdate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.ResetPasswordRequest"><code class="docutils literal notranslate"><span class="pre">ResetPasswordRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.Token"><code class="docutils literal notranslate"><span class="pre">Token</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.UserBase"><code class="docutils literal notranslate"><span class="pre">UserBase</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.UserCreate"><code class="docutils literal notranslate"><span class="pre">UserCreate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html#schemas.UserOut"><code class="docutils literal notranslate"><span class="pre">UserOut</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="crud.html">CRUD Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.create_contact"><code class="docutils literal notranslate"><span class="pre">create_contact()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.delete_contact"><code class="docutils literal notranslate"><span class="pre">delete_contact()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.delete_user"><code class="docutils literal notranslate"><span class="pre">delete_user()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.get_contact"><code class="docutils literal notranslate"><span class="pre">get_contact()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.get_user_by_id"><code class="docutils literal notranslate"><span class="pre">get_user_by_id()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.list_contacts"><code class="docutils literal notranslate"><span class="pre">list_contacts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.list_users"><code class="docutils literal notranslate"><span class="pre">list_users()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.search_contacts"><code class="docutils literal notranslate"><span class="pre">search_contacts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.upcoming_birthdays"><code class="docutils literal notranslate"><span class="pre">upcoming_birthdays()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.update_avatar"><code class="docutils literal notranslate"><span class="pre">update_avatar()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.update_contact"><code class="docutils literal notranslate"><span class="pre">update_contact()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crud.html#crud.update_user_role_and_status"><code class="docutils literal notranslate"><span class="pre">update_user_role_and_status()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">API Contact Manager</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Вперед" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Навігація</h3>
+<p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">Endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schemas.html">Schemas</a></li>
+<li class="toctree-l1"><a class="reference internal" href="crud.html">CRUD Operations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="endpoints.html" title="наступний розділ">Endpoints</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, D. Breus.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

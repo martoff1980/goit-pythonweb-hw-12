@@ -1,0 +1,10 @@
+Middleware
+==========
+
+Auth Middleware
+---------------------
+
+.. automodule:: middleware.auth
+    :members:
+    :undoc-members:
+    :show-inheritance:

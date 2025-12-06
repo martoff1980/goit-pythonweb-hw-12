@@ -1,0 +1,21 @@
+<!-- @format -->
+{% extends "base.html" %} {% block content %}
+<h2>Перевірте свою електронну пошту</h2>
+<p>Ми відправили лист із підтвердженням на <b>{{ email }}</b></p>
+
+<form action="/users/resend-confirmation" method="post">
+	<input type="hidden" name="email" value="{{email }}" />
+	<button type="submit">Надіслати лист повторно</button>
+</form>
+
+<p id="timer"></p>
+
+<script>
+	let timeLeft = 60;
+	const timer = setInterval(() => {
+		document.getElementById('timer').innerText = `Можна повторити через ${timeLeft} сек`;
+		timeLeft--;
+		if (timeLeft < 0) clearInterval(timer);
+	}, 1000);
+</script>
+{% endblock %}

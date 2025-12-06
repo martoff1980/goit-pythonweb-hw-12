@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html lang="uk-UA" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pydantic &#8212; API Contact Manager 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=78e11f7b"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/translations.js?v=0958edf7"></script>
+    <link rel="index" title="Індекс" href="../genindex.html" />
+    <link rel="search" title="Пошук" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pydantic</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._migration</span><span class="w"> </span><span class="kn">import</span> <span class="n">getattr_migration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">VERSION</span><span class="p">,</span> <span class="n">_ensure_pydantic_core_version</span>
+
+<span class="n">_ensure_pydantic_core_version</span><span class="p">()</span>
+<span class="k">del</span> <span class="n">_ensure_pydantic_core_version</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="c1"># import of virtually everything is supported via `__getattr__` below,</span>
+    <span class="c1"># but we need them here for type checking and IDE support</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pydantic_core</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic_core.core_schema</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">FieldSerializationInfo</span><span class="p">,</span>
+        <span class="n">SerializationInfo</span><span class="p">,</span>
+        <span class="n">SerializerFunctionWrapHandler</span><span class="p">,</span>
+        <span class="n">ValidationInfo</span><span class="p">,</span>
+        <span class="n">ValidatorFunctionWrapHandler</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclasses</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.aliases</span><span class="w"> </span><span class="kn">import</span> <span class="n">AliasChoices</span><span class="p">,</span> <span class="n">AliasGenerator</span><span class="p">,</span> <span class="n">AliasPath</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.annotated_handlers</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetCoreSchemaHandler</span><span class="p">,</span> <span class="n">GetJsonSchemaHandler</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigDict</span><span class="p">,</span> <span class="n">with_config</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.fields</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">PrivateAttr</span><span class="p">,</span> <span class="n">computed_field</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.functional_serializers</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">PlainSerializer</span><span class="p">,</span>
+        <span class="n">SerializeAsAny</span><span class="p">,</span>
+        <span class="n">WrapSerializer</span><span class="p">,</span>
+        <span class="n">field_serializer</span><span class="p">,</span>
+        <span class="n">model_serializer</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.functional_validators</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">AfterValidator</span><span class="p">,</span>
+        <span class="n">BeforeValidator</span><span class="p">,</span>
+        <span class="n">InstanceOf</span><span class="p">,</span>
+        <span class="n">ModelWrapValidatorHandler</span><span class="p">,</span>
+        <span class="n">PlainValidator</span><span class="p">,</span>
+        <span class="n">SkipValidation</span><span class="p">,</span>
+        <span class="n">ValidateAs</span><span class="p">,</span>
+        <span class="n">WrapValidator</span><span class="p">,</span>
+        <span class="n">field_validator</span><span class="p">,</span>
+        <span class="n">model_validator</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.json_schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">WithJsonSchema</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.main</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.networks</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.type_adapter</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeAdapter</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.types</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.validate_call_decorator</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_call</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.warnings</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">PydanticDeprecatedSince20</span><span class="p">,</span>
+        <span class="n">PydanticDeprecatedSince26</span><span class="p">,</span>
+        <span class="n">PydanticDeprecatedSince29</span><span class="p">,</span>
+        <span class="n">PydanticDeprecatedSince210</span><span class="p">,</span>
+        <span class="n">PydanticDeprecatedSince211</span><span class="p">,</span>
+        <span class="n">PydanticDeprecatedSince212</span><span class="p">,</span>
+        <span class="n">PydanticDeprecationWarning</span><span class="p">,</span>
+        <span class="n">PydanticExperimentalWarning</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># this encourages pycharm to import `ValidationError` from here, not pydantic_core</span>
+    <span class="n">ValidationError</span> <span class="o">=</span> <span class="n">pydantic_core</span><span class="o">.</span><span class="n">ValidationError</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.deprecated.class_validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">root_validator</span><span class="p">,</span> <span class="n">validator</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.deprecated.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseConfig</span><span class="p">,</span> <span class="n">Extra</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.deprecated.tools</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.root_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">RootModel</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="n">VERSION</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="c1"># dataclasses</span>
+    <span class="s1">&#39;dataclasses&#39;</span><span class="p">,</span>
+    <span class="c1"># functional validators</span>
+    <span class="s1">&#39;field_validator&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;model_validator&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AfterValidator&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;BeforeValidator&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PlainValidator&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;WrapValidator&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SkipValidation&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ValidateAs&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;InstanceOf&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ModelWrapValidatorHandler&#39;</span><span class="p">,</span>
+    <span class="c1"># JSON Schema</span>
+    <span class="s1">&#39;WithJsonSchema&#39;</span><span class="p">,</span>
+    <span class="c1"># deprecated V1 functional validators, these are imported via `__getattr__` below</span>
+    <span class="s1">&#39;root_validator&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;validator&#39;</span><span class="p">,</span>
+    <span class="c1"># functional serializers</span>
+    <span class="s1">&#39;field_serializer&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;model_serializer&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PlainSerializer&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SerializeAsAny&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;WrapSerializer&#39;</span><span class="p">,</span>
+    <span class="c1"># config</span>
+    <span class="s1">&#39;ConfigDict&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;with_config&#39;</span><span class="p">,</span>
+    <span class="c1"># deprecated V1 config, these are imported via `__getattr__` below</span>
+    <span class="s1">&#39;BaseConfig&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Extra&#39;</span><span class="p">,</span>
+    <span class="c1"># validate_call</span>
+    <span class="s1">&#39;validate_call&#39;</span><span class="p">,</span>
+    <span class="c1"># errors</span>
+    <span class="s1">&#39;PydanticErrorCodes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticUserError&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticSchemaGenerationError&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticImportError&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticUndefinedAnnotation&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticInvalidForJsonSchema&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticForbiddenQualifier&#39;</span><span class="p">,</span>
+    <span class="c1"># fields</span>
+    <span class="s1">&#39;Field&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;computed_field&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PrivateAttr&#39;</span><span class="p">,</span>
+    <span class="c1"># alias</span>
+    <span class="s1">&#39;AliasChoices&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AliasGenerator&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AliasPath&#39;</span><span class="p">,</span>
+    <span class="c1"># main</span>
+    <span class="s1">&#39;BaseModel&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;create_model&#39;</span><span class="p">,</span>
+    <span class="c1"># network</span>
+    <span class="s1">&#39;AnyUrl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AnyHttpUrl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FileUrl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;HttpUrl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FtpUrl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;WebsocketUrl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AnyWebsocketUrl&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UrlConstraints&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;EmailStr&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NameEmail&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IPvAnyAddress&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IPvAnyInterface&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IPvAnyNetwork&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PostgresDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CockroachDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AmqpDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;RedisDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;MongoDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;KafkaDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NatsDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;MySQLDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;MariaDBDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ClickHouseDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SnowflakeDsn&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;validate_email&#39;</span><span class="p">,</span>
+    <span class="c1"># root_model</span>
+    <span class="s1">&#39;RootModel&#39;</span><span class="p">,</span>
+    <span class="c1"># deprecated tools, these are imported via `__getattr__` below</span>
+    <span class="s1">&#39;parse_obj_as&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;schema_of&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;schema_json_of&#39;</span><span class="p">,</span>
+    <span class="c1"># types</span>
+    <span class="s1">&#39;Strict&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StrictStr&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;conbytes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;conlist&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;conset&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;confrozenset&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;constr&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StringConstraints&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ImportString&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;conint&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PositiveInt&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NegativeInt&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NonNegativeInt&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NonPositiveInt&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;confloat&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PositiveFloat&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NegativeFloat&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NonNegativeFloat&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NonPositiveFloat&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FiniteFloat&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;condecimal&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;condate&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UUID1&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UUID3&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UUID4&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UUID5&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UUID6&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UUID7&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UUID8&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FilePath&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DirectoryPath&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NewPath&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Json&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Secret&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SecretStr&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SecretBytes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SocketPath&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StrictBool&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StrictBytes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StrictInt&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StrictFloat&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PaymentCardNumber&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ByteSize&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PastDate&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FutureDate&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PastDatetime&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FutureDatetime&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AwareDatetime&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NaiveDatetime&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AllowInfNan&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;EncoderProtocol&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;EncodedBytes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;EncodedStr&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Base64Encoder&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Base64Bytes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Base64Str&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Base64UrlBytes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Base64UrlStr&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;GetPydanticSchema&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Tag&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Discriminator&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;JsonValue&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FailFast&#39;</span><span class="p">,</span>
+    <span class="c1"># type_adapter</span>
+    <span class="s1">&#39;TypeAdapter&#39;</span><span class="p">,</span>
+    <span class="c1"># version</span>
+    <span class="s1">&#39;__version__&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VERSION&#39;</span><span class="p">,</span>
+    <span class="c1"># warnings</span>
+    <span class="s1">&#39;PydanticDeprecatedSince20&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticDeprecatedSince26&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticDeprecatedSince29&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticDeprecatedSince210&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticDeprecatedSince211&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticDeprecatedSince212&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticDeprecationWarning&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PydanticExperimentalWarning&#39;</span><span class="p">,</span>
+    <span class="c1"># annotated handlers</span>
+    <span class="s1">&#39;GetCoreSchemaHandler&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;GetJsonSchemaHandler&#39;</span><span class="p">,</span>
+    <span class="c1"># pydantic_core</span>
+    <span class="s1">&#39;ValidationError&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ValidationInfo&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SerializationInfo&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ValidatorFunctionWrapHandler&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FieldSerializationInfo&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SerializerFunctionWrapHandler&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;OnErrorOmit&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># A mapping of {&lt;member name&gt;: (package, &lt;module name&gt;)} defining dynamic imports</span>
+<span class="n">_dynamic_imports</span><span class="p">:</span> <span class="s1">&#39;dict[str, tuple[str, str]]&#39;</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;dataclasses&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">),</span>
+    <span class="c1"># functional validators</span>
+    <span class="s1">&#39;field_validator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;model_validator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;AfterValidator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;BeforeValidator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PlainValidator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;WrapValidator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;SkipValidation&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;InstanceOf&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ValidateAs&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ModelWrapValidatorHandler&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_validators&#39;</span><span class="p">),</span>
+    <span class="c1"># JSON Schema</span>
+    <span class="s1">&#39;WithJsonSchema&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.json_schema&#39;</span><span class="p">),</span>
+    <span class="c1"># functional serializers</span>
+    <span class="s1">&#39;field_serializer&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_serializers&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;model_serializer&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_serializers&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PlainSerializer&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_serializers&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;SerializeAsAny&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_serializers&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;WrapSerializer&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.functional_serializers&#39;</span><span class="p">),</span>
+    <span class="c1"># config</span>
+    <span class="s1">&#39;ConfigDict&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.config&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;with_config&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.config&#39;</span><span class="p">),</span>
+    <span class="c1"># validate call</span>
+    <span class="s1">&#39;validate_call&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.validate_call_decorator&#39;</span><span class="p">),</span>
+    <span class="c1"># errors</span>
+    <span class="s1">&#39;PydanticErrorCodes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.errors&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticUserError&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.errors&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticSchemaGenerationError&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.errors&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticImportError&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.errors&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticUndefinedAnnotation&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.errors&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticInvalidForJsonSchema&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.errors&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticForbiddenQualifier&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.errors&#39;</span><span class="p">),</span>
+    <span class="c1"># fields</span>
+    <span class="s1">&#39;Field&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.fields&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;computed_field&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.fields&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PrivateAttr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.fields&#39;</span><span class="p">),</span>
+    <span class="c1"># alias</span>
+    <span class="s1">&#39;AliasChoices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.aliases&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;AliasGenerator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.aliases&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;AliasPath&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.aliases&#39;</span><span class="p">),</span>
+    <span class="c1"># main</span>
+    <span class="s1">&#39;BaseModel&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.main&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;create_model&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.main&#39;</span><span class="p">),</span>
+    <span class="c1"># network</span>
+    <span class="s1">&#39;AnyUrl&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;AnyHttpUrl&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;FileUrl&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;HttpUrl&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;FtpUrl&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;WebsocketUrl&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;AnyWebsocketUrl&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;UrlConstraints&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;EmailStr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NameEmail&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;IPvAnyAddress&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;IPvAnyInterface&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;IPvAnyNetwork&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PostgresDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;CockroachDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;AmqpDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;RedisDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;MongoDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;KafkaDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NatsDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;MySQLDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;MariaDBDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ClickHouseDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;SnowflakeDsn&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;validate_email&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.networks&#39;</span><span class="p">),</span>
+    <span class="c1"># root_model</span>
+    <span class="s1">&#39;RootModel&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.root_model&#39;</span><span class="p">),</span>
+    <span class="c1"># types</span>
+    <span class="s1">&#39;Strict&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;StrictStr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;conbytes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;conlist&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;conset&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;confrozenset&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;constr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;StringConstraints&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ImportString&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;conint&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PositiveInt&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NegativeInt&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NonNegativeInt&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NonPositiveInt&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;confloat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PositiveFloat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NegativeFloat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NonNegativeFloat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NonPositiveFloat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;FiniteFloat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;condecimal&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;condate&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;UUID1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;UUID3&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;UUID4&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;UUID5&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;UUID6&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;UUID7&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;UUID8&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;FilePath&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;DirectoryPath&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NewPath&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Json&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Secret&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;SecretStr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;SecretBytes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;StrictBool&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;StrictBytes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;StrictInt&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;StrictFloat&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PaymentCardNumber&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ByteSize&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PastDate&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;SocketPath&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;FutureDate&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PastDatetime&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;FutureDatetime&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;AwareDatetime&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;NaiveDatetime&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;AllowInfNan&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;EncoderProtocol&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;EncodedBytes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;EncodedStr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Base64Encoder&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Base64Bytes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Base64Str&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Base64UrlBytes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Base64UrlStr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;GetPydanticSchema&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Tag&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Discriminator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;JsonValue&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;OnErrorOmit&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;FailFast&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.types&#39;</span><span class="p">),</span>
+    <span class="c1"># type_adapter</span>
+    <span class="s1">&#39;TypeAdapter&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.type_adapter&#39;</span><span class="p">),</span>
+    <span class="c1"># warnings</span>
+    <span class="s1">&#39;PydanticDeprecatedSince20&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.warnings&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticDeprecatedSince26&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.warnings&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticDeprecatedSince29&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.warnings&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticDeprecatedSince210&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.warnings&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticDeprecatedSince211&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.warnings&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticDeprecatedSince212&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.warnings&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticDeprecationWarning&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.warnings&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;PydanticExperimentalWarning&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.warnings&#39;</span><span class="p">),</span>
+    <span class="c1"># annotated handlers</span>
+    <span class="s1">&#39;GetCoreSchemaHandler&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.annotated_handlers&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;GetJsonSchemaHandler&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.annotated_handlers&#39;</span><span class="p">),</span>
+    <span class="c1"># pydantic_core stuff</span>
+    <span class="s1">&#39;ValidationError&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pydantic_core&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ValidationInfo&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pydantic_core&#39;</span><span class="p">,</span> <span class="s1">&#39;.core_schema&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;SerializationInfo&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pydantic_core&#39;</span><span class="p">,</span> <span class="s1">&#39;.core_schema&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ValidatorFunctionWrapHandler&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pydantic_core&#39;</span><span class="p">,</span> <span class="s1">&#39;.core_schema&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;FieldSerializationInfo&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pydantic_core&#39;</span><span class="p">,</span> <span class="s1">&#39;.core_schema&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;SerializerFunctionWrapHandler&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pydantic_core&#39;</span><span class="p">,</span> <span class="s1">&#39;.core_schema&#39;</span><span class="p">),</span>
+    <span class="c1"># deprecated, mostly not included in __all__</span>
+    <span class="s1">&#39;root_validator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.deprecated.class_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;validator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.deprecated.class_validators&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;BaseConfig&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.deprecated.config&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Extra&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.deprecated.config&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;parse_obj_as&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.deprecated.tools&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;schema_of&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.deprecated.tools&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;schema_json_of&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;.deprecated.tools&#39;</span><span class="p">),</span>
+    <span class="c1"># deprecated dynamic imports</span>
+    <span class="s1">&#39;FieldValidationInfo&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pydantic_core&#39;</span><span class="p">,</span> <span class="s1">&#39;.core_schema&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;GenerateSchema&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">__spec__</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;._internal._generate_schema&#39;</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="n">_deprecated_dynamic_imports</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;FieldValidationInfo&#39;</span><span class="p">,</span> <span class="s1">&#39;GenerateSchema&#39;</span><span class="p">}</span>
+
+<span class="n">_getattr_migration</span> <span class="o">=</span> <span class="n">getattr_migration</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">attr_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">_deprecated_dynamic_imports</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic.warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">PydanticDeprecatedSince20</span>
+
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Importing </span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s1"> from `pydantic` is deprecated. This feature is either no longer supported, or is not public.&#39;</span><span class="p">,</span>
+            <span class="n">PydanticDeprecatedSince20</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">dynamic_attr</span> <span class="o">=</span> <span class="n">_dynamic_imports</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dynamic_attr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_getattr_migration</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span>
+
+    <span class="n">package</span><span class="p">,</span> <span class="n">module_name</span> <span class="o">=</span> <span class="n">dynamic_attr</span>
+
+    <span class="k">if</span> <span class="n">module_name</span> <span class="o">==</span> <span class="s1">&#39;__module__&#39;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;.</span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">package</span><span class="o">=</span><span class="n">package</span><span class="p">)</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">package</span><span class="o">=</span><span class="n">package</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">v_module_name</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_dynamic_imports</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">v_module_name</span> <span class="o">==</span> <span class="n">module_name</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_deprecated_dynamic_imports</span><span class="p">:</span>
+                <span class="n">g</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="fm">__dir__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">__all__</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">API Contact Manager</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Вперед" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Навігація</h3>
+<p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../endpoints.html">Endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../middleware.html">Middleware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../schemas.html">Schemas</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../crud.html">CRUD Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cache.html">Cache</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, D. Breus.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
