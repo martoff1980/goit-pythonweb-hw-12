@@ -1,0 +1,21 @@
+# @format
+
+services:
+  - type: web
+    name: contact-manager-api
+    env: docker
+    repo: https://github.com/martoff1980/goit-pythonweb-hw-12
+    region: frankfurt
+    plan: starter
+    branch: main
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: ENV
+        value: production
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: contactmanager-db
+          property: connectionString
