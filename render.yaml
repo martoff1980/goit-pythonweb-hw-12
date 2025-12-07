@@ -2,7 +2,7 @@ services:
   - type: web
     name: contact-manager-api
     env: docker
-    plan: starter
+    plan: free
     region: frankfurt
     branch: main
     autoDeploy: true
