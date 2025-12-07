@@ -1,21 +1,74 @@
-# @format
-
 services:
   - type: web
     name: contact-manager-api
     env: docker
-    repo: https://github.com/martoff1980/goit-pythonweb-hw-12
-    region: frankfurt
     plan: starter
+    region: frankfurt
     branch: main
+    autoDeploy: true
+
     dockerContext: .
     dockerfilePath: ./Dockerfile
-    autoDeploy: true
+
     envVars:
+
+      # ----- Основные переменные -----
       - key: ENV
         value: production
 
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: REFRESH_SECRET
+        generateValue: true
+
+      # ----- Cloudinary -----
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+
+      - key: CLOUDINARY_API_KEY
+        sync: false
+
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+      # ----- Redis (сторонний или Render Redis) -----
+      - key: REDIS_URL
+        fromService:
+          name: contactmanager-redis
+          type: redis
+          property: connectionString
+
+      # ----- SMTP + EMAIL -----
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+
+      # ----- DATABASE -----
       - key: DATABASE_URL
         fromDatabase:
           name: contactmanager-db
           property: connectionString
+
+
+# ========== DATABASE ==========
+databases:
+  - name: contactmanager-db
+    plan: starter
+    region: frankfurt
+
+
+# ========== REDIS ==========
+# Если не нужно — скажи, уберу
+services:
+  - type: redis
+    name: contactmanager-redis
+    region: frankfurt
+    plan: starter
